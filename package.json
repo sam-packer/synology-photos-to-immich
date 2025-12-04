@@ -1,0 +1,27 @@
+{
+  "name": "synology-photos-to-immich",
+  "version": "1.0.0",
+  "description": "Easily migrate photos from Synology Photos to Immich",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "start:node": "node dist/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cli-progress": "^3.12.0",
+    "dotenv": "^17.2.3",
+    "form-data": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/form-data": "^2.2.1",
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "private": true
+}
