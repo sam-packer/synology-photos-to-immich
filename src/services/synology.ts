@@ -113,6 +113,7 @@ export class SynologyFileStationClient {
                 _sid: this.sid,
             },
             responseType: 'stream',
+            timeout: 0, // Disable timeout for downloads
         });
         return response.data;
     }

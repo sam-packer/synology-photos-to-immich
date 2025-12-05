@@ -51,10 +51,16 @@ export class ImmichApiClient {
         form.append('isFavorite', 'false');
 
         // knownLength is required for reliable progress/upload with streams
-        form.append('assetData', fileStream, {
+        // However, if the source (Synology) reports size 0 (common with some formats like m4v),
+        // we must omit knownLength so form-data uses chunked transfer encoding instead of sending Content-Length: 0
+        const appendOptions: FormData.AppendOptions = {
             filename: fileName,
-            knownLength: fileSize
-        });
+        };
+        if (fileSize > 0) {
+            appendOptions.knownLength = fileSize;
+        }
+
+        form.append('assetData', fileStream, appendOptions);
 
         try {
             const response = await this.axiosInstance.post('/api/assets', form, {
