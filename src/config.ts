@@ -17,7 +17,7 @@ export const CONFIG = {
         apiKey: process.env.IMMICH_API_KEY || '',
     },
     options: {
-        concurrency: 2, // Low concurrency to save RAM
+        concurrency: 10,
         progressFile: path.join(os.homedir(), '.synology-immich-progress.json'),
         reportPrefix: 'migration-report',
         maxRetries: 3,

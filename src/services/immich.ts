@@ -19,7 +19,8 @@ export class ImmichApiClient {
                 'Accept': 'application/json'
             },
             maxContentLength: Infinity,
-            maxBodyLength: Infinity
+            maxBodyLength: Infinity,
+            timeout: 600000 // 10 minutes timeout to prevent hanging
         });
     }
 

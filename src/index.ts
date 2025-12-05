@@ -4,6 +4,12 @@ async function main() {
     const manager = new MigrationManager();
     const retryMode = process.argv.includes('--retry-failures');
 
+    // Handle Graceful Shutdown (Ctrl+C)
+    process.on('SIGINT', () => {
+        manager.handleShutdown();
+        process.exit(0);
+    });
+
     try {
         if (retryMode) {
             await manager.retryFailures();

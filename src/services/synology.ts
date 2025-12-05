@@ -10,7 +10,7 @@ export class SynologyFileStationClient {
     constructor(private baseUrl: string) {
         this.axiosInstance = axios.create({
             baseURL: baseUrl,
-            timeout: 30000,
+            timeout: 60000,
         });
     }
 

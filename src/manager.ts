@@ -13,6 +13,8 @@ export class MigrationManager {
     private immichClient: ImmichApiClient;
     private progressTracker: ProgressTracker;
     private currentReportPath: string;
+    private processingFiles = new Map<string, SynologyFile>();
+    private activeBar?: cliProgress.SingleBar;
     private stats = {
         uploaded: 0,
         skipped: 0,
@@ -101,6 +103,7 @@ export class MigrationManager {
                 barIncompleteChar: '\u2591',
                 hideCursor: true
             });
+            this.activeBar = mainBar;
 
             mainBar.start(previousReport.failed.length, 0, { uploaded: 0, skipped: 0, failed: 0, filename: 'Starting...' });
 
@@ -183,6 +186,7 @@ export class MigrationManager {
                 barIncompleteChar: '\u2591',
                 hideCursor: true
             });
+            this.activeBar = mainBar;
 
             mainBar.start(100000, 0, { uploaded: 0, skipped: 0, failed: 0, filename: 'Waiting...' });
 
@@ -233,6 +237,7 @@ export class MigrationManager {
     }
 
     private async processFile(file: SynologyFile, bar: cliProgress.SingleBar) {
+        this.processingFiles.set(file.path, file);
         bar.increment(1, { filename: file.name.substring(0, 20) });
         
         try {
@@ -272,6 +277,8 @@ export class MigrationManager {
             this.report.failed.push({ file: file, reason: error.message });
             bar.update({ uploaded: this.stats.uploaded, skipped: this.stats.skipped, failed: this.stats.failed });
             // console.error(`\nFailed: ${file.path}`);
+        } finally {
+            this.processingFiles.delete(file.path);
         }
         
         // Periodic save
@@ -287,5 +294,30 @@ export class MigrationManager {
         if (!CONFIG.immich.apiKey) {
             throw new Error('Missing Immich API Key');
         }
+    }
+
+    public handleShutdown(): void {
+        if (this.activeBar) {
+            this.activeBar.stop();
+        }
+
+        console.log('\n\nGraceful shutdown initiated...');
+
+        if (this.processingFiles.size > 0) {
+            console.log(`Marking ${this.processingFiles.size} in-flight files as failed/interrupted.`);
+
+            for (const [_, file] of this.processingFiles) {
+                this.report.failed.push({
+                    file: file,
+                    reason: 'Process interrupted by user (SIGINT/Ctrl+C)'
+                });
+                this.stats.failed++;
+            }
+        }
+
+        this.saveReport();
+        this.progressTracker.save();
+        console.log(`Report saved to ${this.currentReportPath}`);
+        console.log('Progress saved.');
     }
 }
